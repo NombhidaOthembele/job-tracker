@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>JobTrackr — Othembele Nombhida</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    /* ─── RESET & TOKENS ─── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0f1117;
+      --surface:   #181c27;
+      --surface2:  #1e2336;
+      --border:    #252b3d;
+      --border2:   #2e3650;
+      --mint:      #6ee7b7;
+      --mint-dim:  rgba(110,231,183,0.12);
+      --mint-glow: rgba(110,231,183,0.25);
+      --amber:     #fbbf24;
+      --amber-dim: rgba(251,191,36,0.12);
+      --red:       #f87171;
+      --red-dim:   rgba(248,113,113,0.12);
+      --blue:      #60a5fa;
+      --blue-dim:  rgba(96,165,250,0.12);
+      --purple:    #a78bfa;
+      --purple-dim:rgba(167,139,250,0.12);
+      --text:      #f0f4ff;
+      --sub:       #94a3b8;
+      --muted:     #4a5568;
+      --mono: 'DM Mono', monospace;
+      --sans: 'DM Sans', sans-serif;
+      --radius: 10px;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ─── SCROLLBAR ─── */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+
+    /* ─── NAV ─── */
+    nav {
+      position: sticky; top: 0; z-index: 200;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 1.5rem;
+      height: 56px;
+      background: rgba(15,17,23,0.9);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-brand {
+      display: flex; align-items: center; gap: 0.625rem;
+      font-family: var(--mono); font-size: 0.85rem; font-weight: 500;
+      color: var(--text); text-decoration: none;
+    }
+    .brand-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--mint);
+      box-shadow: 0 0 8px var(--mint-glow);
+      animation: breathe 3s ease-in-out infinite;
+    }
+    @keyframes breathe {
+      0%,100% { opacity:1; transform:scale(1); }
+      50% { opacity:0.5; transform:scale(0.7); }
+    }
+    .nav-right { display: flex; align-items: center; gap: 0.75rem; }
+    .nav-view-toggle {
+      display: flex; gap: 2px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 3px;
+    }
+    .view-btn {
+      padding: 0.3rem 0.65rem; border-radius: 6px; border: none;
+      background: transparent; color: var(--sub);
+      cursor: pointer; font-size: 0.78rem; font-family: var(--sans);
+      font-weight: 500; transition: all 0.18s; display: flex; align-items: center; gap: 0.35rem;
+    }
+    .view-btn.active {
+      background: var(--surface2); color: var(--text);
+    }
+    .btn-add {
+      display: flex; align-items: center; gap: 0.4rem;
+      padding: 0.4rem 0.9rem; border-radius: 8px;
+      background: var(--mint); color: #0f1117;
+      font-family: var(--sans); font-size: 0.8rem; font-weight: 600;
+      border: none; cursor: pointer; transition: all 0.18s;
+    }
+    .btn-add:hover { background: #a7f3d0; transform: translateY(-1px); box-shadow: 0 4px 16px var(--mint-glow); }
+
+    /* ─── STATS BAR ─── */
+    .stats-bar {
+      display: flex; align-items: stretch; gap: 0;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+    }
+    .stat-item {
+      flex: 1; min-width: 100px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 0.875rem 1rem;
+      border-right: 1px solid var(--border);
+      cursor: default;
+      transition: background 0.15s;
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-item:hover { background: var(--surface2); }
+    .stat-num {
+      font-family: var(--mono); font-size: 1.5rem; font-weight: 500;
+      line-height: 1;
+    }
+    .stat-label {
+      font-size: 0.67rem; text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--sub); margin-top: 0.25rem;
+    }
+    .stat-item.s-total .stat-num { color: var(--text); }
+    .stat-item.s-applied .stat-num { color: var(--blue); }
+    .stat-item.s-interview .stat-num { color: var(--amber); }
+    .stat-item.s-offer .stat-num { color: var(--mint); }
+    .stat-item.s-rejected .stat-num { color: var(--red); }
+    .stat-item.s-rate .stat-num { color: var(--purple); }
+
+    /* ─── MAIN CONTENT ─── */
+    .main { flex: 1; padding: 1.25rem 1.5rem; }
+
+    /* ─── FILTER BAR ─── */
+    .filter-bar {
+      display: flex; align-items: center; gap: 0.75rem;
+      margin-bottom: 1.25rem; flex-wrap: wrap;
+    }
+    .search-wrap { position: relative; flex: 1; min-width: 180px; }
+    .search-wrap svg {
+      position: absolute; left: 0.75rem; top: 50%;
+      transform: translateY(-50%); color: var(--muted);
+      width: 14px; height: 14px; pointer-events: none;
+    }
+    .search-input {
+      width: 100%; padding: 0.5rem 0.75rem 0.5rem 2.25rem;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); color: var(--text);
+      font-family: var(--sans); font-size: 0.8rem; outline: none;
+      transition: border-color 0.18s;
+    }
+    .search-input::placeholder { color: var(--muted); }
+    .search-input:focus { border-color: var(--mint); }
+    .filter-select {
+      padding: 0.5rem 0.75rem;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); color: var(--sub);
+      font-family: var(--sans); font-size: 0.8rem; outline: none;
+      cursor: pointer; transition: border-color 0.18s;
+    }
+    .filter-select:focus { border-color: var(--mint); }
+
+    /* ─── KANBAN ─── */
+    #kanban-view { display: flex; gap: 1rem; overflow-x: auto; padding-bottom: 1rem; min-height: 60vh; }
+    .kanban-col {
+      flex: 0 0 260px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      display: flex; flex-direction: column;
+      max-height: calc(100vh - 220px);
+    }
+    .col-header {
+      padding: 0.875rem 1rem;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .col-title-wrap { display: flex; align-items: center; gap: 0.5rem; }
+    .col-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .col-title { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.03em; }
+    .col-count {
+      font-family: var(--mono); font-size: 0.68rem;
+      background: var(--surface2); border: 1px solid var(--border2);
+      border-radius: 4px; padding: 0.1rem 0.45rem; color: var(--sub);
+    }
+    .col-cards {
+      flex: 1; overflow-y: auto; padding: 0.625rem;
+      display: flex; flex-direction: column; gap: 0.5rem;
+    }
+    .col-cards.drag-over {
+      background: rgba(110,231,183,0.04);
+      border-radius: 8px;
+    }
+
+    /* ─── KANBAN CARD ─── */
+    .app-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.875rem;
+      cursor: grab;
+      transition: border-color 0.18s, transform 0.18s, box-shadow 0.18s;
+      animation: cardIn 0.25s ease both;
+      position: relative;
+    }
+    @keyframes cardIn {
+      from { opacity:0; transform:translateY(10px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .app-card:hover {
+      border-color: var(--border2);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
+    .app-card.dragging {
+      opacity: 0.4; transform: scale(0.97); cursor: grabbing;
+    }
+    .card-company {
+      font-size: 0.72rem; font-weight: 600; letter-spacing: 0.05em;
+      text-transform: uppercase; color: var(--sub); margin-bottom: 0.3rem;
+    }
+    .card-role { font-size: 0.875rem; font-weight: 600; color: var(--text); line-height: 1.3; margin-bottom: 0.625rem; }
+    .card-meta { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.625rem; }
+    .card-tag {
+      font-family: var(--mono); font-size: 0.62rem;
+      padding: 0.15rem 0.5rem; border-radius: 4px;
+      border: 1px solid transparent;
+    }
+    .tag-type-full { background: var(--blue-dim); color: var(--blue); border-color: rgba(96,165,250,0.2); }
+    .tag-type-intern { background: var(--purple-dim); color: var(--purple); border-color: rgba(167,139,250,0.2); }
+    .tag-type-contract { background: var(--amber-dim); color: var(--amber); border-color: rgba(251,191,36,0.2); }
+    .tag-type-remote { background: var(--mint-dim); color: var(--mint); border-color: rgba(110,231,183,0.2); }
+    .tag-type-hybrid { background: rgba(148,163,184,0.1); color: var(--sub); border-color: rgba(148,163,184,0.2); }
+    .card-date {
+      font-family: var(--mono); font-size: 0.65rem; color: var(--muted);
+    }
+    .card-deadline-warn {
+      font-family: var(--mono); font-size: 0.65rem; color: var(--amber);
+    }
+    .card-actions {
+      position: absolute; top: 0.5rem; right: 0.5rem;
+      display: flex; gap: 4px; opacity: 0; transition: opacity 0.15s;
+    }
+    .app-card:hover .card-actions { opacity: 1; }
+    .card-btn {
+      width: 24px; height: 24px; border-radius: 5px; border: none;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 0.7rem; transition: all 0.15s;
+    }
+    .card-btn-edit { background: var(--surface2); color: var(--sub); }
+    .card-btn-edit:hover { background: var(--border2); color: var(--text); }
+    .card-btn-del { background: var(--red-dim); color: var(--red); }
+    .card-btn-del:hover { background: rgba(248,113,113,0.25); }
+    .card-notes-preview {
+      margin-top: 0.5rem; font-size: 0.72rem; color: var(--muted);
+      border-top: 1px solid var(--border); padding-top: 0.5rem;
+      line-height: 1.5;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+
+    /* ─── LIST VIEW ─── */
+    #list-view { display: none; }
+    .list-table { width: 100%; border-collapse: collapse; }
+    .list-table th {
+      text-align: left; font-size: 0.68rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.1em; color: var(--sub);
+      padding: 0.625rem 0.875rem;
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      position: sticky; top: 0;
+    }
+    .list-table th:first-child { border-radius: 8px 0 0 0; }
+    .list-table th:last-child { border-radius: 0 8px 0 0; }
+    .list-table td {
+      padding: 0.75rem 0.875rem;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8rem; vertical-align: middle;
+    }
+    .list-table tr:hover td { background: var(--surface); }
+    .list-table tr:last-child td { border-bottom: none; }
+    .status-pill {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      font-family: var(--mono); font-size: 0.65rem; font-weight: 500;
+      padding: 0.2rem 0.6rem; border-radius: 5px; border: 1px solid transparent;
+      white-space: nowrap;
+    }
+    .pill-dot { width: 5px; height: 5px; border-radius: 50%; }
+
+    /* ─── EMPTY STATE ─── */
+    .empty-state {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 4rem 2rem; color: var(--muted); text-align: center; gap: 0.75rem;
+    }
+    .empty-icon { font-size: 2.5rem; opacity: 0.3; }
+    .empty-title { font-size: 0.9rem; font-weight: 600; color: var(--sub); }
+    .empty-sub { font-size: 0.78rem; line-height: 1.6; }
+
+    /* ─── MODAL OVERLAY ─── */
+    .overlay {
+      position: fixed; inset: 0; z-index: 500;
+      background: rgba(9,10,15,0.75);
+      backdrop-filter: blur(6px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 1rem;
+      opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    }
+    .overlay.open { opacity: 1; pointer-events: all; }
+
+    /* ─── MODAL ─── */
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 14px;
+      width: 100%; max-width: 520px;
+      max-height: 90vh; overflow-y: auto;
+      padding: 1.75rem;
+      transform: translateY(16px) scale(0.98);
+      transition: transform 0.25s ease;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+    }
+    .overlay.open .modal { transform: translateY(0) scale(1); }
+    .modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.5rem;
+    }
+    .modal-title { font-size: 1rem; font-weight: 700; }
+    .modal-close {
+      width: 28px; height: 28px; border-radius: 6px;
+      background: var(--surface2); border: none; color: var(--sub);
+      cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+    }
+    .modal-close:hover { background: var(--border2); color: var(--text); }
+
+    /* ─── FORM ─── */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-full { grid-column: 1 / -1; }
+    .form-group { display: flex; flex-direction: column; gap: 0.35rem; }
+    .form-label {
+      font-size: 0.68rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--sub);
+    }
+    .form-input, .form-select, .form-textarea {
+      background: var(--bg); border: 1px solid var(--border2);
+      border-radius: 8px; padding: 0.6rem 0.75rem;
+      color: var(--text); font-family: var(--sans); font-size: 0.82rem;
+      outline: none; transition: border-color 0.18s; width: 100%;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--mint); }
+    .form-input::placeholder, .form-textarea::placeholder { color: var(--muted); }
+    .form-textarea { resize: vertical; min-height: 72px; }
+    .form-select { cursor: pointer; }
+    .form-select option { background: var(--surface2); }
+
+    .modal-footer {
+      display: flex; gap: 0.75rem; margin-top: 1.5rem;
+      justify-content: flex-end;
+    }
+    .btn-cancel {
+      padding: 0.55rem 1.1rem; border-radius: 8px;
+      background: var(--surface2); border: 1px solid var(--border2);
+      color: var(--sub); font-family: var(--sans); font-size: 0.82rem;
+      font-weight: 500; cursor: pointer; transition: all 0.15s;
+    }
+    .btn-cancel:hover { color: var(--text); border-color: var(--border2); }
+    .btn-save {
+      padding: 0.55rem 1.25rem; border-radius: 8px;
+      background: var(--mint); color: #0f1117;
+      border: none; font-family: var(--sans); font-size: 0.82rem;
+      font-weight: 600; cursor: pointer; transition: all 0.18s;
+    }
+    .btn-save:hover { background: #a7f3d0; transform: translateY(-1px); }
+
+    /* ─── TOAST ─── */
+    .toast-wrap {
+      position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 999;
+      display: flex; flex-direction: column; gap: 0.5rem;
+    }
+    .toast {
+      background: var(--surface2); border: 1px solid var(--border2);
+      border-radius: 8px; padding: 0.65rem 1rem;
+      font-size: 0.78rem; color: var(--text);
+      display: flex; align-items: center; gap: 0.5rem;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      animation: toastIn 0.25s ease;
+      max-width: 280px;
+    }
+    .toast.removing { animation: toastOut 0.25s ease forwards; }
+    @keyframes toastIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
+    @keyframes toastOut { from{opacity:1;transform:translateX(0)} to{opacity:0;transform:translateX(20px)} }
+
+    /* ─── COLOUR SEMANTICS ─── */
+    /* Applied */
+    .c-applied   { color: var(--blue); }
+    .bg-applied  { background: var(--blue-dim); border-color: rgba(96,165,250,0.25); }
+    .dot-applied { background: var(--blue); }
+    /* Interview */
+    .c-interview   { color: var(--amber); }
+    .bg-interview  { background: var(--amber-dim); border-color: rgba(251,191,36,0.25); }
+    .dot-interview { background: var(--amber); }
+    /* Offer */
+    .c-offer   { color: var(--mint); }
+    .bg-offer  { background: var(--mint-dim); border-color: rgba(110,231,183,0.25); }
+    .dot-offer { background: var(--mint); }
+    /* Rejected */
+    .c-rejected   { color: var(--red); }
+    .bg-rejected  { background: var(--red-dim); border-color: rgba(248,113,113,0.25); }
+    .dot-rejected { background: var(--red); }
+    /* Wishlist */
+    .c-wishlist   { color: var(--purple); }
+    .bg-wishlist  { background: var(--purple-dim); border-color: rgba(167,139,250,0.25); }
+    .dot-wishlist { background: var(--purple); }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 640px) {
+      nav { padding: 0 1rem; }
+      .main { padding: 1rem; }
+      .form-grid { grid-template-columns: 1fr; }
+      .form-full { grid-column: 1; }
+      #kanban-view { flex-direction: column; }
+      .kanban-col { flex: none; width: 100%; max-height: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-brand" href="#">
+    <span class="brand-dot"></span>
+    JobTrackr
+    <span style="color:var(--muted);font-size:0.7rem;margin-left:0.25rem">/ Othembele Nombhida</span>
+  </a>
+  <div class="nav-right">
+    <div class="nav-view-toggle">
+      <button class="view-btn active" id="btn-kanban" onclick="switchView('kanban')">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="0" y="0" width="3" height="12" rx="1" fill="currentColor"/><rect x="4.5" y="0" width="3" height="12" rx="1" fill="currentColor"/><rect x="9" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg>
+        Board
+      </button>
+      <button class="view-btn" id="btn-list" onclick="switchView('list')">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="0" y="0" width="12" height="2" rx="1" fill="currentColor"/><rect x="0" y="5" width="12" height="2" rx="1" fill="currentColor"/><rect x="0" y="10" width="8" height="2" rx="1" fill="currentColor"/></svg>
+        List
+      </button>
+    </div>
+    <button class="btn-add" onclick="openModal()">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      Add Application
+    </button>
+  </div>
+</nav>
+
+<!-- STATS BAR -->
+<div class="stats-bar" id="stats-bar">
+  <div class="stat-item s-total">
+    <div class="stat-num" id="s-total">0</div>
+    <div class="stat-label">Total</div>
+  </div>
+  <div class="stat-item s-applied">
+    <div class="stat-num" id="s-applied">0</div>
+    <div class="stat-label">Applied</div>
+  </div>
+  <div class="stat-item s-interview">
+    <div class="stat-num" id="s-interview">0</div>
+    <div class="stat-label">Interview</div>
+  </div>
+  <div class="stat-item s-offer">
+    <div class="stat-num" id="s-offer">0</div>
+    <div class="stat-label">Offers</div>
+  </div>
+  <div class="stat-item s-rejected">
+    <div class="stat-num" id="s-rejected">0</div>
+    <div class="stat-label">Rejected</div>
+  </div>
+  <div class="stat-item s-rate">
+    <div class="stat-num" id="s-rate">—</div>
+    <div class="stat-label">Interview Rate</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <div class="search-wrap">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="7" cy="7" r="5"/><path d="M11 11l3 3"/>
+      </svg>
+      <input class="search-input" id="search-input" type="text" placeholder="Search company or role…" oninput="renderAll()"/>
+    </div>
+    <select class="filter-select" id="filter-status" onchange="renderAll()">
+      <option value="">All Statuses</option>
+      <option value="wishlist">Wishlist</option>
+      <option value="applied">Applied</option>
+      <option value="interview">Interview</option>
+      <option value="offer">Offer</option>
+      <option value="rejected">Rejected</option>
+    </select>
+    <select class="filter-select" id="filter-type" onchange="renderAll()">
+      <option value="">All Types</option>
+      <option value="internship">Internship</option>
+      <option value="full-time">Full-time</option>
+      <option value="contract">Contract</option>
+      <option value="remote">Remote</option>
+      <option value="hybrid">Hybrid</option>
+    </select>
+    <select class="filter-select" id="sort-by" onchange="renderAll()">
+      <option value="date-desc">Newest first</option>
+      <option value="date-asc">Oldest first</option>
+      <option value="company">Company A–Z</option>
+      <option value="deadline">Deadline</option>
+    </select>
+  </div>
+
+  <!-- KANBAN BOARD -->
+  <div id="kanban-view">
+    <!-- columns injected by JS -->
+  </div>
+
+  <!-- LIST VIEW -->
+  <div id="list-view">
+    <table class="list-table" id="list-table">
+      <thead>
+        <tr>
+          <th>Company</th>
+          <th>Role</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Applied</th>
+          <th>Deadline</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="list-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="overlay" id="modal-overlay" onclick="overlayClick(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Add Application</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Company *</label>
+        <input class="form-input" id="f-company" type="text" placeholder="e.g. BBD Software"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Role *</label>
+        <input class="form-input" id="f-role" type="text" placeholder="e.g. Junior Developer"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <select class="form-select" id="f-status">
+          <option value="wishlist">Wishlist</option>
+          <option value="applied" selected>Applied</option>
+          <option value="interview">Interview</option>
+          <option value="offer">Offer</option>
+          <option value="rejected">Rejected</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Type</label>
+        <select class="form-select" id="f-type">
+          <option value="internship">Internship</option>
+          <option value="full-time">Full-time</option>
+          <option value="contract">Contract</option>
+          <option value="remote">Remote</option>
+          <option value="hybrid">Hybrid</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Date Applied</label>
+        <input class="form-input" id="f-date" type="date"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Deadline</label>
+        <input class="form-input" id="f-deadline" type="date"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Location</label>
+        <input class="form-input" id="f-location" type="text" placeholder="e.g. Durban / Remote"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Salary / Stipend</label>
+        <input class="form-input" id="f-salary" type="text" placeholder="e.g. R8 000/month"/>
+      </div>
+      <div class="form-group form-full">
+        <label class="form-label">Source URL</label>
+        <input class="form-input" id="f-url" type="url" placeholder="https://pnet.co.za/…"/>
+      </div>
+      <div class="form-group form-full">
+        <label class="form-label">Notes</label>
+        <textarea class="form-textarea" id="f-notes" placeholder="Contact name, referral, interview prep notes…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveApplication()">Save Application</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<!-- ═══════════════════════════════════
+     SIMULATED FULL-STACK ARCHITECTURE
+     ═══════════════════════════════════
+  Layer 1 — DB:  IndexedDB (via db object, mirrors a SQL schema)
+  Layer 2 — API: api object (CRUD methods, async, mirrors REST endpoints)
+  Layer 3 — App: state + render pipeline, event-driven UI
+-->
+<script>
+'use strict';
+
+/* ══════════════════════════════════════
+   LAYER 1 — DATABASE (IndexedDB)
+   Mirrors: PostgreSQL table "applications"
+   ══════════════════════════════════════ */
+const DB = (() => {
+  const DB_NAME = 'jobtrackr_db', STORE = 'applications', VERSION = 1;
+  let _db = null;
+
+  const open = () => new Promise((resolve, reject) => {
+    if (_db) return resolve(_db);
+    const req = indexedDB.open(DB_NAME, VERSION);
+    req.onupgradeneeded = e => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains(STORE)) {
+        const store = db.createObjectStore(STORE, { keyPath: 'id', autoIncrement: true });
+        store.createIndex('status', 'status', { unique: false });
+        store.createIndex('company', 'company', { unique: false });
+        store.createIndex('createdAt', 'createdAt', { unique: false });
+      }
+    };
+    req.onsuccess = e => { _db = e.target.result; resolve(_db); };
+    req.onerror   = () => reject(req.error);
+  });
+
+  const tx = async (mode, fn) => {
+    const db = await open();
+    return new Promise((resolve, reject) => {
+      const t = db.transaction(STORE, mode);
+      const store = t.objectStore(STORE);
+      const req = fn(store);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror   = () => reject(req.error);
+    });
+  };
+
+  return {
+    getAll: async () => {
+      const db = await open();
+      return new Promise((resolve, reject) => {
+        const t = db.transaction(STORE, 'readonly');
+        const req = t.objectStore(STORE).getAll();
+        req.onsuccess = () => resolve(req.result);
+        req.onerror   = () => reject(req.error);
+      });
+    },
+    insert: (record) => tx('readwrite', s => s.add({ ...record, createdAt: Date.now() })),
+    update: (record) => tx('readwrite', s => s.put(record)),
+    delete: (id)     => tx('readwrite', s => s.delete(id)),
+    get:    (id)     => tx('readonly',  s => s.get(id)),
+  };
+})();
+
+/* ══════════════════════════════════════
+   LAYER 2 — REST-STYLE API
+   Mirrors Express.js route handlers:
+   GET    /api/applications
+   POST   /api/applications
+   PUT    /api/applications/:id
+   DELETE /api/applications/:id
+   ══════════════════════════════════════ */
+const API = {
+  // GET /api/applications
+  async getAll() {
+    try { return await DB.getAll(); }
+    catch(e) { console.error('[API] GET /applications failed:', e); return []; }
+  },
+
+  // POST /api/applications
+  async create(payload) {
+    const record = {
+      company:  payload.company?.trim(),
+      role:     payload.role?.trim(),
+      status:   payload.status || 'applied',
+      type:     payload.type || 'internship',
+      dateApplied: payload.dateApplied || new Date().toISOString().split('T')[0],
+      deadline: payload.deadline || null,
+      location: payload.location?.trim() || '',
+      salary:   payload.salary?.trim() || '',
+      url:      payload.url?.trim() || '',
+      notes:    payload.notes?.trim() || '',
+    };
+    if (!record.company || !record.role) throw new Error('Company and role are required');
+    const id = await DB.insert(record);
+    return { ...record, id };
+  },
+
+  // PUT /api/applications/:id
+  async update(id, payload) {
+    const existing = await DB.get(id);
+    if (!existing) throw new Error(`Application #${id} not found`);
+    const updated = { ...existing, ...payload };
+    await DB.update(updated);
+    return updated;
+  },
+
+  // DELETE /api/applications/:id
+  async delete(id) {
+    await DB.delete(id);
+    return { deleted: id };
+  },
+
+  // PATCH /api/applications/:id/status  (used by drag-drop)
+  async patchStatus(id, status) {
+    return this.update(id, { status });
+  },
+};
+
+/* ══════════════════════════════════════
+   LAYER 3 — APPLICATION STATE & UI
+   ══════════════════════════════════════ */
+let STATE = {
+  apps: [],
+  editingId: null,
+  view: 'kanban',
+  dragId: null,
+};
+
+const STATUSES = [
+  { key: 'wishlist',  label: 'Wishlist',   dot: '#a78bfa' },
+  { key: 'applied',   label: 'Applied',    dot: '#60a5fa' },
+  { key: 'interview', label: 'Interview',  dot: '#fbbf24' },
+  { key: 'offer',     label: 'Offer 🎉',   dot: '#6ee7b7' },
+  { key: 'rejected',  label: 'Rejected',   dot: '#f87171' },
+];
+
+const TYPE_LABELS = {
+  internship: 'Internship', 'full-time': 'Full-time',
+  contract: 'Contract', remote: 'Remote', hybrid: 'Hybrid',
+};
+
+/* ─── Boot ─── */
+async function boot() {
+  STATE.apps = await API.getAll();
+  if (!STATE.apps.length) await seedDemoData();
+  STATE.apps = await API.getAll();
+  renderAll();
+}
+
+/* ─── Demo seed ─── */
+async function seedDemoData() {
+  const today = new Date();
+  const daysAgo = n => { const d = new Date(today); d.setDate(d.getDate()-n); return d.toISOString().split('T')[0]; };
+  const daysAhead = n => { const d = new Date(today); d.setDate(d.getDate()+n); return d.toISOString().split('T')[0]; };
+  const demos = [
+    { company:'eThekwini Municipality', role:'ICT Graduate Intern', status:'applied', type:'internship', dateApplied:daysAgo(2), deadline:daysAhead(10), location:'Durban, KZN', salary:'R8 494/month', url:'https://www.ethekwini.gov.za', notes:'Closing 17 July 2026. Fields include ICT, Web Dev, Programming. Submitted online via careers portal.' },
+    { company:'BBD Software', role:'Graduate Developer', status:'applied', type:'full-time', dateApplied:daysAgo(7), deadline:'', location:'Cape Town / Remote', salary:'R22 000/month', url:'https://bbd.co.za', notes:'Applied via LinkedIn. Strong .NET stack focus. Verify GitHub link before submitting.' },
+    { company:'Brilliantel', role:'12-Month IT Intern', status:'interview', type:'internship', dateApplied:daysAgo(14), deadline:'', location:'Gauteng', salary:'Stipend TBC', url:'https://brilliantel.co.za', notes:'Interviewed 30 June. Rotating across telecoms divisions. Waiting on feedback.' },
+    { company:'TFG (The Foschini Group)', role:'Junior Developer', status:'applied', type:'hybrid', dateApplied:daysAgo(5), deadline:daysAhead(20), location:'Cape Town', salary:'Undisclosed', url:'https://tfg.co.za', notes:'Graduate programme. Angular + .NET stack matches my skills perfectly.' },
+    { company:'iLAB', role:'QA Software Intern', status:'wishlist', type:'internship', dateApplied:'', deadline:daysAhead(15), location:'Johannesburg', salary:'Competitive stipend', url:'https://ilab.co.za', notes:'BSc/ICT grad required. Prep unit testing knowledge before applying. Look up Selenium, JUnit.' },
+    { company:'Metropolitan', role:'IT Graduate Programme', status:'rejected', type:'full-time', dateApplied:daysAgo(30), deadline:'', location:'Cape Town', salary:'R18 000/month', url:'', notes:'Received rejection email 15 June. Feedback: lacked commercial experience. Follow up in 6 months.' },
+    { company:'homechoice', role:'Junior Full Stack Developer', status:'applied', type:'hybrid', dateApplied:daysAgo(3), deadline:daysAhead(12), location:'Cape Town', salary:'Undisclosed', url:'', notes:'React + Node.js stack. Worth learning React basics before interview stage.' },
+  ];
+  for (const d of demos) await API.create(d);
+}
+
+/* ─── Filter & Sort helper ─── */
+function getFiltered() {
+  const q    = document.getElementById('search-input').value.toLowerCase();
+  const stat = document.getElementById('filter-status').value;
+  const type = document.getElementById('filter-type').value;
+  const sort = document.getElementById('sort-by').value;
+
+  let apps = STATE.apps.filter(a => {
+    if (q && !(a.company?.toLowerCase().includes(q) || a.role?.toLowerCase().includes(q))) return false;
+    if (stat && a.status !== stat) return false;
+    if (type && a.type !== type) return false;
+    return true;
+  });
+
+  apps.sort((a, b) => {
+    if (sort === 'date-asc')  return (a.createdAt||0) - (b.createdAt||0);
+    if (sort === 'company')   return (a.company||'').localeCompare(b.company||'');
+    if (sort === 'deadline')  return (a.deadline||'9999') < (b.deadline||'9999') ? -1 : 1;
+    return (b.createdAt||0) - (a.createdAt||0); // date-desc default
+  });
+
+  return apps;
+}
+
+/* ─── Render everything ─── */
+function renderAll() {
+  renderStats();
+  if (STATE.view === 'kanban') renderKanban();
+  else renderList();
+}
+
+/* ─── Stats bar ─── */
+function renderStats() {
+  const apps = STATE.apps;
+  const count = s => apps.filter(a => a.status === s).length;
+  const applied   = count('applied');
+  const interview = count('interview');
+  const offer     = count('offer');
+  const rejected  = count('rejected');
+  const wishlist  = count('wishlist');
+  const total     = apps.length;
+  const rate      = applied + interview + offer + rejected > 0
+    ? Math.round((interview + offer) / (applied + interview + offer + rejected) * 100) + '%'
+    : '—';
+
+  document.getElementById('s-total').textContent    = total;
+  document.getElementById('s-applied').textContent  = applied;
+  document.getElementById('s-interview').textContent = interview;
+  document.getElementById('s-offer').textContent    = offer;
+  document.getElementById('s-rejected').textContent = rejected;
+  document.getElementById('s-rate').textContent     = rate;
+}
+
+/* ─── Kanban ─── */
+function renderKanban() {
+  const board = document.getElementById('kanban-view');
+  const apps  = getFiltered();
+  board.innerHTML = '';
+
+  STATUSES.forEach(s => {
+    const colApps = apps.filter(a => a.status === s.key);
+
+    const col = document.createElement('div');
+    col.className = 'kanban-col';
+    col.dataset.status = s.key;
+
+    // Drop zone events
+    col.addEventListener('dragover', e => { e.preventDefault(); col.querySelector('.col-cards').classList.add('drag-over'); });
+    col.addEventListener('dragleave', () => col.querySelector('.col-cards').classList.remove('drag-over'));
+    col.addEventListener('drop', async e => {
+      e.preventDefault();
+      col.querySelector('.col-cards').classList.remove('drag-over');
+      const id = parseInt(e.dataTransfer.getData('text/plain'));
+      if (!id || isNaN(id)) return;
+      await API.patchStatus(id, s.key);
+      STATE.apps = await API.getAll();
+      renderAll();
+      toast(`Moved to ${s.label}`, s.dot);
+    });
+
+    col.innerHTML = `
+      <div class="col-header">
+        <div class="col-title-wrap">
+          <div class="col-dot" style="background:${s.dot}"></div>
+          <div class="col-title">${s.label.replace(' 🎉','')}</div>
+        </div>
+        <div class="col-count">${colApps.length}</div>
+      </div>
+      <div class="col-cards" id="cards-${s.key}"></div>
+    `;
+    board.appendChild(col);
+
+    const cardContainer = col.querySelector('.col-cards');
+    if (!colApps.length) {
+      cardContainer.innerHTML = `<div class="empty-state" style="padding:1.5rem 0.5rem">
+        <div class="empty-icon" style="font-size:1.25rem">✦</div>
+        <div class="empty-sub" style="font-size:0.7rem">No applications</div>
+      </div>`;
+    } else {
+      colApps.forEach((app, i) => {
+        const card = buildCard(app, i);
+        cardContainer.appendChild(card);
+      });
+    }
+  });
+}
+
+/* ─── Build a single card ─── */
+function buildCard(app, delay = 0) {
+  const el = document.createElement('div');
+  el.className = 'app-card';
+  el.style.animationDelay = `${delay * 0.04}s`;
+  el.draggable = true;
+  el.dataset.id = app.id;
+
+  el.addEventListener('dragstart', e => {
+    STATE.dragId = app.id;
+    e.dataTransfer.setData('text/plain', String(app.id));
+    setTimeout(() => el.classList.add('dragging'), 0);
+  });
+  el.addEventListener('dragend', () => el.classList.remove('dragging'));
+
+  const deadlineHtml = (() => {
+    if (!app.deadline) return '';
+    const d = new Date(app.deadline), now = new Date();
+    const diff = Math.ceil((d - now) / 86400000);
+    if (diff < 0) return `<span class="card-deadline-warn">⚠ Deadline passed</span>`;
+    if (diff <= 7) return `<span class="card-deadline-warn">⏰ ${diff}d left</span>`;
+    return `<span class="card-date">Due ${app.deadline}</span>`;
+  })();
+
+  const typeKey = app.type === 'full-time' ? 'full' : app.type === 'internship' ? 'intern' : app.type === 'contract' ? 'contract' : app.type === 'remote' ? 'remote' : 'hybrid';
+  const typeLabel = TYPE_LABELS[app.type] || app.type;
+
+  el.innerHTML = `
+    <div class="card-actions">
+      <button class="card-btn card-btn-edit" onclick="openModal(${app.id})" title="Edit">✎</button>
+      <button class="card-btn card-btn-del"  onclick="deleteApp(${app.id})"  title="Delete">✕</button>
+    </div>
+    <div class="card-company">${esc(app.company)}</div>
+    <div class="card-role">${esc(app.role)}</div>
+    <div class="card-meta">
+      <span class="card-tag tag-type-${typeKey}">${typeLabel}</span>
+      ${app.location ? `<span class="card-tag" style="background:rgba(148,163,184,0.08);color:var(--muted);border-color:rgba(148,163,184,0.15)">📍 ${esc(app.location)}</span>` : ''}
+      ${app.salary   ? `<span class="card-tag" style="background:var(--mint-dim);color:var(--mint);border-color:rgba(110,231,183,0.15)">${esc(app.salary)}</span>` : ''}
+    </div>
+    ${app.dateApplied ? `<div class="card-date">Applied ${app.dateApplied}</div>` : ''}
+    ${deadlineHtml}
+    ${app.notes ? `<div class="card-notes-preview">${esc(app.notes)}</div>` : ''}
+  `;
+  return el;
+}
+
+/* ─── List view ─── */
+function renderList() {
+  const apps = getFiltered();
+  const tbody = document.getElementById('list-tbody');
+
+  if (!apps.length) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state">
+      <div class="empty-icon">📋</div>
+      <div class="empty-title">No applications yet</div>
+      <div class="empty-sub">Hit "Add Application" to get started.</div>
+    </div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = apps.map(app => {
+    const s = STATUSES.find(s => s.key === app.status) || STATUSES[1];
+    const deadlineTd = (() => {
+      if (!app.deadline) return '<td style="color:var(--muted)">—</td>';
+      const d = new Date(app.deadline), now = new Date();
+      const diff = Math.ceil((d-now)/86400000);
+      if (diff < 0)  return `<td style="color:var(--red)">${app.deadline} (passed)</td>`;
+      if (diff <= 7) return `<td style="color:var(--amber)">${app.deadline} <small>(${diff}d)</small></td>`;
+      return `<td>${app.deadline}</td>`;
+    })();
+    return `<tr>
+      <td><strong>${esc(app.company)}</strong></td>
+      <td>${esc(app.role)}</td>
+      <td><span style="color:var(--sub)">${TYPE_LABELS[app.type]||app.type}</span></td>
+      <td><span class="status-pill bg-${app.status}">
+        <span class="pill-dot dot-${app.status}"></span>${s.label.replace(' 🎉','')}
+      </span></td>
+      <td style="color:var(--sub);font-family:var(--mono);font-size:0.72rem">${app.dateApplied||'—'}</td>
+      ${deadlineTd}
+      <td>
+        <button class="card-btn card-btn-edit" onclick="openModal(${app.id})" title="Edit" style="opacity:1">✎</button>
+        <button class="card-btn card-btn-del"  onclick="deleteApp(${app.id})"  title="Delete" style="opacity:1;margin-left:4px">✕</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+/* ─── View switch ─── */
+function switchView(v) {
+  STATE.view = v;
+  document.getElementById('kanban-view').style.display = v === 'kanban' ? 'flex' : 'none';
+  document.getElementById('list-view').style.display   = v === 'list'   ? 'block' : 'none';
+  document.getElementById('btn-kanban').classList.toggle('active', v === 'kanban');
+  document.getElementById('btn-list').classList.toggle('active', v === 'list');
+  renderAll();
+}
+
+/* ─── Modal open/close ─── */
+async function openModal(id = null) {
+  STATE.editingId = id;
+  document.getElementById('modal-title').textContent = id ? 'Edit Application' : 'Add Application';
+  document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+
+  if (id) {
+    const app = await DB.get(id);
+    document.getElementById('f-company').value  = app.company || '';
+    document.getElementById('f-role').value     = app.role || '';
+    document.getElementById('f-status').value   = app.status || 'applied';
+    document.getElementById('f-type').value     = app.type || 'internship';
+    document.getElementById('f-date').value     = app.dateApplied || '';
+    document.getElementById('f-deadline').value = app.deadline || '';
+    document.getElementById('f-location').value = app.location || '';
+    document.getElementById('f-salary').value   = app.salary || '';
+    document.getElementById('f-url').value      = app.url || '';
+    document.getElementById('f-notes').value    = app.notes || '';
+  } else {
+    ['f-company','f-role','f-deadline','f-location','f-salary','f-url','f-notes'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('f-status').value = 'applied';
+    document.getElementById('f-type').value   = 'internship';
+  }
+
+  document.getElementById('modal-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('f-company').focus(), 250);
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  STATE.editingId = null;
+}
+
+function overlayClick(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+}
+
+/* ─── Save application ─── */
+async function saveApplication() {
+  const payload = {
+    company:     document.getElementById('f-company').value,
+    role:        document.getElementById('f-role').value,
+    status:      document.getElementById('f-status').value,
+    type:        document.getElementById('f-type').value,
+    dateApplied: document.getElementById('f-date').value,
+    deadline:    document.getElementById('f-deadline').value,
+    location:    document.getElementById('f-location').value,
+    salary:      document.getElementById('f-salary').value,
+    url:         document.getElementById('f-url').value,
+    notes:       document.getElementById('f-notes').value,
+  };
+
+  try {
+    if (STATE.editingId) {
+      await API.update(STATE.editingId, payload);
+      toast('Application updated ✓', '#6ee7b7');
+    } else {
+      await API.create(payload);
+      toast('Application added ✓', '#6ee7b7');
+    }
+    STATE.apps = await API.getAll();
+    closeModal();
+    renderAll();
+  } catch(e) {
+    toast('Error: ' + e.message, '#f87171');
+  }
+}
+
+/* ─── Delete ─── */
+async function deleteApp(id) {
+  if (!confirm('Delete this application?')) return;
+  await API.delete(id);
+  STATE.apps = await API.getAll();
+  renderAll();
+  toast('Application deleted', '#f87171');
+}
+
+/* ─── Toast ─── */
+function toast(msg, color = '#6ee7b7') {
+  const wrap = document.getElementById('toast-wrap');
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.innerHTML = `<span style="width:6px;height:6px;border-radius:50%;background:${color};flex-shrink:0"></span>${msg}`;
+  wrap.appendChild(t);
+  setTimeout(() => {
+    t.classList.add('removing');
+    setTimeout(() => t.remove(), 250);
+  }, 2500);
+}
+
+/* ─── Util ─── */
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ─── Keyboard shortcuts ─── */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); openModal(); }
+});
+
+/* ─── Init kanban view ─── */
+switchView('kanban');
+
+/* ─── Boot ─── */
+boot();
+</script>
+</body>
+</html>
